@@ -32,6 +32,7 @@ type TaskProvider = () => Task;
 
 var runnables = {};
 var runCount = 1;
+var rootTagInit;
 const tasks: Map<string, TaskProvider> = new Map();
 
 type ComponentProvider = () => ReactClass<any>;
@@ -72,8 +73,13 @@ var AppRegistry = {
 
   registerComponent: function(appKey: string, getComponentFunc: ComponentProvider): string {
     runnables[appKey] = {
-      run: (appParameters) =>
-        renderApplication(getComponentFunc(), appParameters.initialProps, appParameters.rootTag)
+          run: (appParameters) => {
+            if (rootTagInit !== undefined) {
+              AppRegistry.unmountApplicationComponentAtRootTag(rootTagInit)
+            }
+            rootTagInit = appParameters.rootTag
+            renderApplication(getComponentFunc(), appParameters.initialProps, appParameters.rootTag)
+          }
     };
     return appKey;
   },
